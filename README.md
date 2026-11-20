@@ -40,9 +40,10 @@ registries:
 
 imagelists:
   <imagelist-name>:
-    - image1:tag
-    - image2:tag
-    - image3:tag
+    - name: image1:tag
+    - name: image2:tag
+      lts: true
+    - name: image3:tag
   <imagelist-name-2>:
     - ...
 
@@ -65,8 +66,18 @@ Docker will use the default registry as defined by the Docker configuration.
 Optionally define a target folder location. If folder is not defined,
 the root of the target repository will be used.
 
-Next define imagelists. Each imagelist has a name and contains a list of images
-(with tags).
+Next define imagelists. Each imagelist has a name and contains a list of image
+entries. Each entry has the following properties:
+
+- `name`: the image name, including its tag, e.g. `library/postgres:15.1-alpine`.
+- `lts`: optional, defaults to `false`. By default an image is skipped when it
+  already exists in the target registry. Set `lts: true` for images whose tag
+  is updated upstream over time, such as base images like `ubuntu:22.04`. Such
+  images are pulled and pushed again on every run, so the target registry
+  always gets the latest version of that tag.
+
+Note: image entries must use the `name:` form. Plain strings like
+`- image1:tag`, as used by older versions of Dockerdd, are no longer supported.
 
 Finally defines jobs. Each job copies the given imagelists from the given
 source registry to the target registry.
@@ -79,6 +90,16 @@ given order.
 ``` sh
 dockerdd.py <jobs-file>
 ```
+
+If no jobs file is given, `jobs.yaml` in the current directory is used.
+
+## Digests
+
+For every image that is copied, Dockerdd looks up the manifest digest of the
+target image and appends it to `digest.txt` in the current directory, in the
+form `<target-image>:<tag>@<digest>`. You can use these digests to pin images
+by digest instead of by tag. The file is never truncated, so each run adds new
+lines; remove it before a run if you only want the results of that run.
 
 ## Authentication
 
