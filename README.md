@@ -23,6 +23,25 @@ To install the Docker library for Python, run the following command:
 pip install docker
 ```
 
+## Upgrading from an older version
+
+The syntax of image entries in the jobs file has changed. If you upgrade
+Dockerdd, update your jobs file **before** running the new version, otherwise
+the script will fail. Each image entry must now be written as a `name:`
+property instead of a plain string:
+
+``` yaml
+# Old syntax
+imagelists:
+  postgres:
+    - library/postgres:15.1-alpine
+
+# New syntax
+imagelists:
+  postgres:
+    - name: library/postgres:15.1-alpine
+```
+
 ## Create the jobs file
 
 This is the structure of a jobs file, it's in yaml format:
@@ -78,6 +97,7 @@ entries. Each entry has the following properties:
 
 Note: image entries must use the `name:` form. Plain strings like
 `- image1:tag`, as used by older versions of Dockerdd, are no longer supported.
+See [Upgrading from an older version](#upgrading-from-an-older-version).
 
 Finally defines jobs. Each job copies the given imagelists from the given
 source registry to the target registry.
